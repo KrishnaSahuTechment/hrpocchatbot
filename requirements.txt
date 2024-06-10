@@ -1,3 +1,7 @@
-altair
-pandas
 streamlit
+oci
+langchain
+langchain_community
+ocifs
+oci-cli
+faiss-cpu
