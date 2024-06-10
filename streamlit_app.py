@@ -30,6 +30,7 @@ BUCKET_NAME = st.secrets["BUCKET_NAME"]
 OBJECT_NAME = st.secrets["OBJECT_NAME"] 
 COMPARTMENT_ID = st.secrets["COMPARTMENT_ID"] 
 SESSION_ID = "abc123"
+DATABASE_NAME = "chat_history_table_session"
 
 
 def initialize_llm(temperature=0.75,top_p=0,top_k=0,max_tokens=200):
@@ -172,12 +173,12 @@ def main():
     )
 
     # Connect to SQLite database
-    conn = sqlite3.connect('session_chat_history_table.db')
+    conn = sqlite3.connect(f'{DATABASE_NAME}.db')
     c = conn.cursor()
 
     # Create a table to store chat messages if not exists
     c.execute(
-        '''CREATE TABLE IF NOT EXISTS session_chat_history_table (session_id TEXT, AI_message TEXT, Human_message TEXT, date_val TEXT) ''')
+        f'''CREATE TABLE IF NOT EXISTS {DATABASE_NAME} (session_id TEXT, AI_message TEXT, Human_message TEXT, date_val TEXT) ''')
 
     today = date.today()
     str_today = str(today)
@@ -216,7 +217,7 @@ def main():
 
             # Save chat message to the database
             c.execute(
-                "INSERT INTO session_chat_history_table (session_id, AI_message, Human_message, date_val) VALUES (?,?,?,?)",
+                f"INSERT INTO {DATABASE_NAME} (session_id, AI_message, Human_message, date_val) VALUES (?,?,?,?)",
                 (SESSION_ID, response["answer"],prompt, str_today))
             conn.commit()
 
@@ -228,12 +229,12 @@ def main():
         # Display chat history from the database
         st.write("Chat History:")
         unique_dates = c.execute(
-            f"SELECT DISTINCT date_val FROM session_chat_history_table where session_id='{SESSION_ID}'").fetchall()
+            f"SELECT DISTINCT date_val FROM {DATABASE_NAME} where session_id='{SESSION_ID}'").fetchall()
 
         for date_value in unique_dates:
             with st.expander(date_value[0]):
                 chat_history_date = c.execute(
-                    f"SELECT AI_message, Human_message, date_val FROM session_chat_history_table where session_id='{SESSION_ID}' and date_val='{date_value[0]}'"
+                    f"SELECT AI_message, Human_message, date_val FROM {DATABASE_NAME} where session_id='{SESSION_ID}' and date_val='{date_value[0]}'"
                 ).fetchall()
 
                 for message_date in chat_history_date:
