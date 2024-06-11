@@ -1,7 +1,6 @@
 streamlit
 langchain
 langchain_community
-sqlite3
 ocifs
 oci-cli
 faiss-cpu
