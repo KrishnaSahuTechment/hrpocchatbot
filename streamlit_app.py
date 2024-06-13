@@ -29,14 +29,14 @@ NAMESPACE = st.secrets["NAMESPACE"]
 BUCKET_NAME = st.secrets["BUCKET_NAME"] 
 OBJECT_NAME = st.secrets["OBJECT_NAME"] 
 COMPARTMENT_ID = st.secrets["COMPARTMENT_ID"] 
-SESSION_ID = "abc123"
+SESSION_ID = "abc1234"
 DATABASE_NAME = "chat_history_table_session"
 
-# user="ocid1.user.oc1..aaaaaaaawxbz5prkm6y3ja5ambupqdfgqn6ggp5zbzojpq7pirvbyqas6dgq"
-# fingerprint="e4:64:6a:9e:1a:fa:0d:2f:7a:f8:36:d8:8a:18:83:fd"
-# key_file="krishna.sahu@techment.com_2024-04-24T10_13_19.206Z.pem"
-# tenancy="ocid1.tenancy.oc1..aaaaaaaauevhkihjbrur3awjyepvnvkelbtw5qss6cjuxhwop4etveapxoja"
-# region="us-chicago-1"
+os.environ['OCI_USER'] = 'ocid1.user.oc1..aaaaaaaawxbz5prkm6y3ja5ambupqdfgqn6ggp5zbzojpq7pirvbyqas6dgq'
+os.environ['OCI_FINGERPRINT'] = 'e4:64:6a:9e:1a:fa:0d:2f:7a:f8:36:d8:8a:18:83:fd'
+os.environ['OCI_KEY_FILE'] = 'krishna.sahu@techment.com_2024-04-24T10_13_19.206Z.pem'
+os.environ['OCI_TENANCY'] = 'ocid1.tenancy.oc1..aaaaaaaauevhkihjbrur3awjyepvnvkelbtw5qss6cjuxhwop4etveapxoja'
+os.environ['OCI_REGION'] = 'us-chicago-1'
 
 
 def initialize_llm(temperature=0.75,top_p=0,top_k=0,max_tokens=200):
@@ -49,6 +49,7 @@ def initialize_llm(temperature=0.75,top_p=0,top_k=0,max_tokens=200):
 
 
 def initialize_object_storage_client():
+    CONFIG_PROFILE = "DEFAULT"
     # config = oci.config.from_file('~/.oci/config', CONFIG_PROFILE)   
     config = {
         "user":st.secrets["user"] ,
@@ -149,7 +150,7 @@ def display_chat_history(history):
 
 
 def main():
-    temperature  = st.sidebar.slider("Tempreture:", min_value=0.0, max_value=1.0, value=1.0, step=0.1)
+    temperature  = st.sidebar.slider("Tempreture:", min_value=0.0, max_value=1.0, value=0.5, step=0.1)
     top_p = st.sidebar.slider("Top_p:", min_value=0.00, max_value=1.00, value=0.00, step=0.01)
     max_tokens = st.sidebar.slider("Max Tokens:", min_value=10, max_value=4000, value=512, step=1)
     top_k = st.sidebar.slider("Top_k:", min_value=0.00, max_value=1.00, value=0.00, step=0.01)
@@ -180,7 +181,7 @@ def main():
 
     conversational_rag_chain = RunnableWithMessageHistory(
         rag_chain,
-        lambda session_id: get_session_history(store, session_id),
+        lambda session_id: get_session_history(store, SESSION_ID),
         input_messages_key="input",
         history_messages_key="chat_history",
         output_messages_key="answer",
@@ -255,7 +256,11 @@ def main():
                     st.chat_message("human").write(message_date[1])
                     st.chat_message("ai").write(message_date[0])
                     st.markdown("<hr>", unsafe_allow_html=True)
-
+        
+        # all_values = c.execute(
+        #     f"SELECT * FROM {DATABASE_NAME} ").fetchall()
+        # st.write(all_values)
+        
         conn.close()
 
 
